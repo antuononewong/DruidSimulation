@@ -8,18 +8,18 @@ to create and tune different units as the strength/numbers of abilities can be e
 from collections import namedtuple
 
 #--------------GLOBALS FOR ABILITIES/BASE GAMEPLAY NUMBERS-----------------
-SPELL = namedtuple()
+SPELL = namedtuple("SPELL", "damage castTime cost astralPowerGain")
 
-STARSURGE = 0
-SOLAR_WRATH = 0
-LUNAR_STRIKE = 0
-MOONFIRE = 0
-SUNFIRE = 0
-ASTRAL_POWER = 0
+STARSURGE = SPELL(2000, 0, 40, 0) 
+SOLAR_WRATH = SPELL
+LUNAR_STRIKE = SPELL
+MOONFIRE = SPELL
+SUNFIRE = SPELL
+ASTRAL_POWER = 40
 SOLAR_EMPOWERMENTS = 0
 LUNAR_EMPOWERMENTS = 0
-SOLAR_EMPOWERMENT_CHANCE = 0
-LUNAR_EMPOWERMENT_CHANCE = 0
+SOLAR_EMPOWERMENT_CHANCE = 13
+LUNAR_EMPOWERMENT_CHANCE = 8
 
 GCD = 1 # Global Cooldown of 1 second - time delay after using an ability
 DAMAGE_DONE = 0
@@ -35,8 +35,19 @@ TIMER = 0
 
 # Takes in a global spell, then adds overall time used and damage done to our totals
 def cast (spell : namedtuple):
-    return
-
+    global DAMAGE_DONE, TIMER, ASTRAL_POWER
+    
+    if (spell == STARSURGE):
+        ASTRAL_POWER -= 40
+        DAMAGE_DONE += STARSURGE.damage
+        TIMER += GCD + STARSURGE.castTime
+    
+    elif (spell == SOLAR_WRATH):
+        return 
+    
+    elif (spell == LUNAR_STRIKE):
+        return
+    
 # If we cast Lunar Strike, we have a chance to generate Solar Empowerments. This uses
 # a randomization scheme to get more Solar Empowerments from casts.
 def getSolarEmpowerments():
@@ -59,7 +70,25 @@ def checkLunarEmpowerments():
 
 # Base function that will handle the rotation described above based on the inputted timer
 def run (time : int): 
-    return
+    
+    while (TIMER < time):
+        
+        if (ASTRAL_POWER >= 40):
+            cast(STARSURGE)
+            
+        elif (SOLAR_EMPOWERMENTS > 0):
+            cast(SOLAR_WRATH)
+            
+        elif (LUNAR_EMPOWERMENTS > 0):
+            cast(LUNAR_STRIKE)
+            
+        else:
+            cast(SOLAR_WRATH)
+        break
+    
+    print(str(DAMAGE_DONE) + " damage done over " + str(time) + " seconds - DPS = " + "{:0.2f}".format(DAMAGE_DONE/time))
+            
+    
 
 if __name__ == '__main__':
     run(300)
