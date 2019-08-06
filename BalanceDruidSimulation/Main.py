@@ -9,6 +9,7 @@ from collections import namedtuple
 
 #--------------GLOBALS FOR ABILITIES/BASE GAMEPLAY NUMBERS-----------------
 SPELL = namedtuple("SPELL", "damage castTime cost astralPowerGain")
+EMPOWERMENT = namedtuple("EMPOWERMENT", "damageBuffPercent castTimeReduction")
 
 STARSURGE = SPELL(2000, 0, 40, 0) 
 SOLAR_WRATH = SPELL
@@ -16,10 +17,13 @@ LUNAR_STRIKE = SPELL
 MOONFIRE = SPELL
 SUNFIRE = SPELL
 ASTRAL_POWER = 40 # 100 Astral Power cap
-SOLAR_EMPOWERMENTS = 0
-LUNAR_EMPOWERMENTS = 0
+
+SOLAR_EMPOWERMENT = EMPOWERMENT(1.25, 0.8) # 25% dmg buff, 20% castTimeReduction
+LUNAR_EMPOWERMENT = EMPOWERMENT(1.20, 0.6) # 20% dmg buff, 40% castTimeReduction
 SOLAR_EMPOWERMENT_CHANCE = 13
 LUNAR_EMPOWERMENT_CHANCE = 8
+SOLAR_EMPOWERMENT_COUNT = 0
+LUNAR_EMPOWERMENT_COUNT = 0
 
 GCD = 1 # Global Cooldown of 1 second - time delay after using an ability
 DAMAGE_DONE = 0
@@ -35,18 +39,25 @@ TIMER = 0
 
 # Takes in a global spell, then adds overall time used and damage done to our totals
 def cast (spell : namedtuple):
-    global DAMAGE_DONE, TIMER, ASTRAL_POWER
+    global DAMAGE_DONE, TIMER, ASTRAL_POWER, SOLAR_EMPOWERMENT_COUNT, LUNAR_EMPOWERMENT_COUNT
     
     if (spell == STARSURGE):
         ASTRAL_POWER -= 40
         DAMAGE_DONE += STARSURGE.damage
         TIMER += GCD + STARSURGE.castTime
+        SOLAR_EMPOWERMENT_COUNT += 1
+        LUNAR_EMPOWERMENT_COUNT += 1
     
     elif (spell == SOLAR_WRATH):
-        return 
+        checkSolarEmpowerments()
+        getLunarEmpowerments()
     
     elif (spell == LUNAR_STRIKE):
-        return
+        checkLunarEmpowerments()
+        getSolarEmpowerments()
+        
+    else:
+        print("Error: Attempting to cast invalid spell.")
     
 # If we cast Lunar Strike, we have a chance to generate Solar Empowerments. This uses
 # a randomization scheme to get more Solar Empowerments from casts.
@@ -61,7 +72,16 @@ def getLunarEmpowerments():
 # Checks if we have any Solar Empowerments stored. If so, uses then and adds the 
 # adjusted values of time and damage done to our totals rather than baseline ones.
 def checkSolarEmpowerments():
-    return 
+    global DAMAGE_DONE, TIMER, SOLAR_EMPOWERMENT_COUNT
+    
+    if (SOLAR_EMPOWERMENT_COUNT > 0):
+        DAMAGE_DONE += (SOLAR_WRATH.damage * SOLAR_EMPOWERMENT.damageBuffPercent)
+        TIMER += (SOLAR_WRATH.castTime * SOLAR_EMPOWERMENT.castTimeReduction) # castTime > GCD even with reduction, so ignore GCD
+        SOLAR_EMPOWERMENT_COUNT -= 1
+        
+    else:
+        DAMAGE_DONE += SOLAR_WRATH.damage
+        TIMER += SOLAR_WRATH.castTime
 
 # Checks if we have any Lunar Empowerments stored. If so, uses them and adds the
 # adjusted values of time and damage done to our totals rather than baseline ones.
@@ -76,10 +96,10 @@ def run (time : int):
         if (ASTRAL_POWER >= 40):
             cast(STARSURGE)
             
-        elif (SOLAR_EMPOWERMENTS > 0):
+        elif (SOLAR_EMPOWERMENT_COUNT > 0):
             cast(SOLAR_WRATH)
             
-        elif (LUNAR_EMPOWERMENTS > 0):
+        elif (LUNAR_EMPOWERMENT_COUNT > 0):
             cast(LUNAR_STRIKE)
             
         else:
