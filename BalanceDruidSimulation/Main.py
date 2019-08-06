@@ -6,28 +6,33 @@ and we can figure out how strong each one is by simulating an optimal use of abi
 to create and tune different units as the strength/numbers of abilities can be easily adjusted.
 '''
 from collections import namedtuple
+import random
 
-#--------------GLOBALS FOR ABILITIES/BASE GAMEPLAY NUMBERS-----------------
+#------------------SPELLS-------------------------
 SPELL = namedtuple("SPELL", "damage castTime cost astralPowerGain")
-EMPOWERMENT = namedtuple("EMPOWERMENT", "damageBuffPercent castTimeReduction")
-
 STARSURGE = SPELL(2000, 0, 40, 0) 
 SOLAR_WRATH = SPELL
 LUNAR_STRIKE = SPELL
 MOONFIRE = SPELL
 SUNFIRE = SPELL
-ASTRAL_POWER = 40 # 100 Astral Power cap
 
+#------------------EMPOWERMENTS-------------------
+EMPOWERMENT = namedtuple("EMPOWERMENT", "damageBuffPercent castTimeReduction")
 SOLAR_EMPOWERMENT = EMPOWERMENT(1.25, 0.8) # 25% dmg buff, 20% castTimeReduction
 LUNAR_EMPOWERMENT = EMPOWERMENT(1.20, 0.6) # 20% dmg buff, 40% castTimeReduction
-SOLAR_EMPOWERMENT_CHANCE = 13
-LUNAR_EMPOWERMENT_CHANCE = 8
+SOLAR_EMPOWERMENT_CHANCE = 13 # 13% chance to gain Solar Empowerment
+LUNAR_EMPOWERMENT_CHANCE = 8 # 8% chance to gain Lunar Empowerment
+
+#------------------CLASS RESOURCES-------------------------
+ASTRAL_POWER = 40 # 100 Astral Power cap
 SOLAR_EMPOWERMENT_COUNT = 0
 LUNAR_EMPOWERMENT_COUNT = 0
 
+#------------------BASE GAMEPLAY NUMBERS----------------------------
 GCD = 1 # Global Cooldown of 1 second - time delay after using an ability
 DAMAGE_DONE = 0
 TIMER = 0
+
 #----------------------------------------------------
 
 # Optimal Rotation:
@@ -62,13 +67,21 @@ def cast (spell : namedtuple):
 # If we cast Lunar Strike, we have a chance to generate Solar Empowerments. This uses
 # a randomization scheme to get more Solar Empowerments from casts.
 def getSolarEmpowerments():
-    return 
+    global SOLAR_EMPOWERMENT_COUNT
+    chance = random.randint(1, 100)
+    
+    if (chance <= SOLAR_EMPOWERMENT_CHANCE):
+        SOLAR_EMPOWERMENT_COUNT += 1 
 
 # If we cast Solar Wrath, we have a chance to generate Lunar Empowerments. This uses
 # a randomization scheme to get more Lunar Empowerments from casts.
 def getLunarEmpowerments():
-    return 
-
+    global LUNAR_EMPOWERMENT_COUNT
+    chance = random.randint(1, 100)
+    
+    if (chance <= LUNAR_EMPOWERMENT_CHANCE):
+        LUNAR_EMPOWERMENT_COUNT += 1
+        
 # Checks if we have any Solar Empowerments stored. If so, uses then and adds the 
 # adjusted values of time and damage done to our totals rather than baseline ones.
 def checkSolarEmpowerments():
@@ -86,7 +99,16 @@ def checkSolarEmpowerments():
 # Checks if we have any Lunar Empowerments stored. If so, uses them and adds the
 # adjusted values of time and damage done to our totals rather than baseline ones.
 def checkLunarEmpowerments():
-    return
+    global DAMAGE_DONE, TIMER, LUNAR_EMPOWERMENT_COUNT
+    
+    if (LUNAR_EMPOWERMENT_COUNT > 0):
+        DAMAGE_DONE += (LUNAR_STRIKE.damage * LUNAR_EMPOWERMENT.damageBuffPercent)
+        TIMER += (LUNAR_STRIKE.castTime * LUNAR_EMPOWERMENT.castTimeReduction) # castTIme > GCD always, so ignore GCD
+        LUNAR_EMPOWERMENT_COUNT -= 1
+        
+    else:
+        DAMAGE_DONE += LUNAR_STRIKE.damage
+        TIMER += LUNAR_STRIKE.castTime
 
 # Base function that will handle the rotation described above based on the inputted timer
 def run (time : int): 
