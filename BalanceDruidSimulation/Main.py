@@ -10,11 +10,12 @@ import random
 
 #------------------SPELLS-------------------------
 SPELL = namedtuple("SPELL", "damage castTime cost astralPowerGain")
-STARSURGE = SPELL(2000, 0, 40, 0) 
-SOLAR_WRATH = SPELL
-LUNAR_STRIKE = SPELL
-MOONFIRE = SPELL
-SUNFIRE = SPELL
+SPELL_DOT = namedtuple("SPELL_DOT", "initialDamage tickDamage tickRate astralPowerGain")
+STARSURGE = SPELL(2400, 0, 40, 0) 
+SOLAR_WRATH = SPELL(800, 1.75, 0, 12)
+LUNAR_STRIKE = SPELL(1100, 2.25, 0, 18)
+MOONFIRE = SPELL_DOT(400, 180, 1, 5)
+SUNFIRE = SPELL_DOT(350, 210, 1, 7)
 
 #------------------EMPOWERMENTS-------------------
 EMPOWERMENT = namedtuple("EMPOWERMENT", "damageBuffPercent castTimeReduction")
@@ -110,7 +111,17 @@ def checkLunarEmpowerments():
         DAMAGE_DONE += LUNAR_STRIKE.damage
         TIMER += LUNAR_STRIKE.castTime
 
-# Base function that will handle the rotation described above based on the inputted timer
+# Takes in the inputed runtime and calculates the DOT damage done over the course of the simulation.
+# We're assuming a perfect rotation with 100% uptime on Moonfire.
+def getMoonfireDamage (time : int):
+    return 
+
+# Takes in the inputed runtime and calculates the DOT damage done over the course of the simulation.
+# We're assuming a perfect rotation with 100% uptime on Sunfire.
+def getSunfireDamage (time: int):
+    return
+
+# Base function that will handle the rotation described above based on the inputed timer
 def run (time : int): 
     
     while (TIMER < time):
@@ -126,9 +137,12 @@ def run (time : int):
             
         else:
             cast(SOLAR_WRATH)
-        break
+        
     
-    print(str(DAMAGE_DONE) + " damage done over " + str(time) + " seconds - DPS = " + "{:0.2f}".format(DAMAGE_DONE/time))
+    # account for moonfire/sunfire damage with division of time
+    # account for extra starsurge damage from gained Astral Power, add it onto the totals
+    
+    print(str(int(DAMAGE_DONE)) + " damage done over " + str(time) + " seconds - DPS = " + "{:0.2f}".format(DAMAGE_DONE/time))
             
     
 
