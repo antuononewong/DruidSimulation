@@ -10,12 +10,12 @@ import random
 
 #------------------SPELLS-------------------------
 SPELL = namedtuple("SPELL", "damage castTime cost astralPowerGain")
-SPELL_DOT = namedtuple("SPELL_DOT", "initialDamage tickDamage tickRate astralPowerGain")
+SPELL_DOT = namedtuple("SPELL_DOT", "initialDamage tickDamage tickRate duration astralPowerGain")
 STARSURGE = SPELL(2400, 0, 40, 0) 
 SOLAR_WRATH = SPELL(800, 1.75, 0, 12)
 LUNAR_STRIKE = SPELL(1100, 2.25, 0, 18)
-MOONFIRE = SPELL_DOT(400, 180, 1, 5)
-SUNFIRE = SPELL_DOT(350, 210, 1, 7)
+MOONFIRE = SPELL_DOT(400, 180, 1, 24, 5)
+SUNFIRE = SPELL_DOT(350, 210, 1, 18, 7)
 
 #------------------EMPOWERMENTS-------------------
 EMPOWERMENT = namedtuple("EMPOWERMENT", "damageBuffPercent castTimeReduction")
@@ -112,17 +112,27 @@ def checkLunarEmpowerments():
         TIMER += LUNAR_STRIKE.castTime
 
 # Takes in the inputed runtime and calculates the DOT damage done over the course of the simulation.
-# We're assuming a perfect rotation with 100% uptime on Moonfire.
-def getMoonfireDamage (time : int):
-    return 
-
-# Takes in the inputed runtime and calculates the DOT damage done over the course of the simulation.
-# We're assuming a perfect rotation with 100% uptime on Sunfire.
-def getSunfireDamage (time: int):
-    return
+# We're assuming a perfect rotation with 100% uptime on Moonfire and Sunfire.
+def getDotDamage (time : int, dot : namedtuple):
+    global DAMAGE_DONE, TIMER
+     
+    dotCasts = (time / dot.duration)
+    dotTickDamage = (dot.tickDamage * time) # We lose 1 tick from initial cast
+    dotInitialDamage = (dot.initialDamage * dotCasts)
+    
+    # Account for the extra astral power we gain from casting the dot - adjust timer accordingly
+    astralPowerGained = (dot.astralPowerGain * dotCasts)
+    starsurgeCasts = astralPowerGained / 40
+    starsurgeDamage = (starsurgeCasts * STARSURGE.damage)
+    
+    TIMER += dotCasts + starsurgeCasts
+    DAMAGE_DONE += dotTickDamage + dotInitialDamage + starsurgeDamage
 
 # Base function that will handle the rotation described above based on the inputed timer
 def run (time : int): 
+    
+    getDotDamage(time, MOONFIRE)
+    getDotDamage(time, SUNFIRE)
     
     while (TIMER < time):
         
