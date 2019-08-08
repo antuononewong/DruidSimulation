@@ -6,7 +6,7 @@ and we can figure out how strong each one is by simulating an optimal use of abi
 to create and tune different units as the strength/numbers of abilities can be easily adjusted.  This simulation assumes
 we are only attacking a single target. Area of effect (AoE) will not be calculated.
 '''
-# Version 1.6
+# Version 1.7
 
 from collections import namedtuple
 import random
@@ -153,7 +153,7 @@ def printBreakdown(time : int):
     print("Sunfire - " + str(int(SUNFIRE_DAMAGE)) + " {:0.2f}%".format((SUNFIRE_DAMAGE / DAMAGE_DONE) * 100))
     
     
-# Base function that will handle the rotation described above based on the inputed timer
+# Base function that will handle the rotation described above based on the inputed timer.
 def run (time : int): 
     global DAMAGE_DONE
     
@@ -181,3 +181,15 @@ def run (time : int):
 
 if __name__ == '__main__':
     run(300)
+
+# Output - damage done numbers will changed because of RNG in the base rotation
+'''
+345306 damage done over 300 seconds - DPS = 1151.02
+
+Breakdown:
+Starsurge - 109583 31.74%
+Solar Wrath - 62640 18.14%
+Lunar Strike - 33750 9.77%
+Moonfire - 67500 19.55%
+Sunfire - 71833 20.80%
+'''
