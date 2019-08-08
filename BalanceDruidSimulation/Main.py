@@ -3,9 +3,10 @@ This is a quantitative approach to creating a unit.  This module will test the d
 within a certain time frame based on the class, Balance Druid, within the game World of Warcraft.
 There's various classes and specializations (i.e Subtlety Rogue, Fury Warrior, Beast Mastery Hunter) within the game, 
 and we can figure out how strong each one is by simulating an optimal use of abilities.  This method can also be used
-to create and tune different units as the strength/numbers of abilities can be easily adjusted.
+to create and tune different units as the strength/numbers of abilities can be easily adjusted.  This simulation assumes
+we are only attacking a single target. Area of effect (AoE) will not be calculated.
 '''
-# Version 1.5
+# Version 1.6
 
 from collections import namedtuple
 import random
@@ -13,16 +14,16 @@ import random
 #------------------SPELLS-------------------------
 SPELL = namedtuple("SPELL", "damage castTime cost astralPowerGain")
 SPELL_DOT = namedtuple("SPELL_DOT", "initialDamage tickDamage tickRate duration astralPowerGain")
-STARSURGE = SPELL(20000, 0, 40, 0) 
-SOLAR_WRATH = SPELL(450, 1.85, 0, 12)
-LUNAR_STRIKE = SPELL(3000, 2.05, 0, 24)
-MOONFIRE = SPELL_DOT(600, 200, 1, 24, 5)
-SUNFIRE = SPELL_DOT(350, 220, 1, 18, 7)
+STARSURGE = SPELL(20000, 0, 40, 0) # Hard hitting resource spending spell
+SOLAR_WRATH = SPELL(450, 1.85, 0, 12) # Fast single target spell
+LUNAR_STRIKE = SPELL(3000, 2.05, 0, 30) # Slow AoE spell that is still used for single target
+MOONFIRE = SPELL_DOT(600, 200, 1, 24, 5) # Single target dot
+SUNFIRE = SPELL_DOT(350, 220, 1, 18, 7) # AoE dot still used in single target
 
 #------------------EMPOWERMENTS-------------------
 EMPOWERMENT = namedtuple("EMPOWERMENT", "damageBuffPercent castTimeReduction")
-SOLAR_EMPOWERMENT = EMPOWERMENT(1.25, 0.8) # 25% dmg buff, 20% castTimeReduction
-LUNAR_EMPOWERMENT = EMPOWERMENT(1.20, 0.6) # 20% dmg buff, 40% castTimeReduction
+SOLAR_EMPOWERMENT = EMPOWERMENT(1.20, 0.8) # 20% dmg buff, 20% castTimeReduction
+LUNAR_EMPOWERMENT = EMPOWERMENT(1.25, 0.5) # 25% dmg buff, 50% castTimeReduction
 SOLAR_EMPOWERMENT_CHANCE = 13 # 13% chance to gain Solar Empowerment
 LUNAR_EMPOWERMENT_CHANCE = 8 # 8% chance to gain Lunar Empowerment
 
